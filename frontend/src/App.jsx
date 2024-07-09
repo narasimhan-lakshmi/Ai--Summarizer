@@ -1,13 +1,12 @@
-// SummarizerComponent.js
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const App = () => {
+const SummarizerComponent = () => {
   const [inputText, setInputText] = useState('');
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleInputChange = (e) => {
     setInputText(e.target.value);
@@ -15,21 +14,19 @@ const App = () => {
 
   const handleSummarize = async () => {
     try {
-      setLoading(true); // Set loading to true when summarization starts
+      setLoading(true);
+      setError(null);
 
       const result = await axios.post('http://localhost:5000/api/summarize', {
-        inputs: inputText,
-        parameters: {
-          max_length: 100,
-          min_length: 30,
-        },
+        text: inputText,
       });
 
-      setSummary(result.data);
+      setSummary(result.data.summary);
     } catch (error) {
       console.error('Error summarizing text:', error);
+      setError('An error occurred while summarizing the text.');
     } finally {
-      setLoading(false); // Set loading to false when summarization is complete (success or error)
+      setLoading(false);
     }
   };
 
@@ -41,7 +38,7 @@ const App = () => {
         value={inputText}
         onChange={handleInputChange}
       />
-      <button className="summarize-button" onClick={handleSummarize}>
+      <button className="summarize-button" onClick={handleSummarize} disabled={loading}>
         {loading ? 'Summarizing...' : 'Summarize'}
       </button>
 
@@ -50,6 +47,8 @@ const App = () => {
           <div className="spinner"></div>
         </div>
       )}
+
+      {error && <div className="error-message">{error}</div>}
 
       {summary && (
         <div className="summary-container">
@@ -61,4 +60,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default SummarizerComponent;
